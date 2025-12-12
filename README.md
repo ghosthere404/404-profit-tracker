@@ -1,4 +1,4 @@
-<img width="636" height="1016" alt="image" src="https://github.com/user-attachments/assets/ed2f72df-0181-4882-a635-b87282254be9" /># 404 Profit Tracker 💰
+# 404 Profit Tracker 💰
 
 Desktop widget to track balances across multiple Solana wallets for memecoin launches.
 
@@ -31,6 +31,7 @@ Or create a desktop shortcut:
 ✅ **Wallet Management** - Add/remove wallets anytime  
 ✅ **Helius RPC** - Fast, reliable balance fetching  
 ✅ **Dark Theme** - Easy on the eyes with bright, clear text  
+<img width="636" height="1016" alt="image" src="https://github.com/user-attachments/assets/ed2f72df-0181-4882-a635-b87282254be9" />
 <img width="462" height="624" alt="image" src="https://github.com/user-attachments/assets/08140d15-ddf0-4e14-bba5-1fe05a3ee613" />
 <img width="610" height="356" alt="image" src="https://github.com/user-attachments/assets/aebca137-b960-40fa-8387-7579e2dbe81c" />
 
