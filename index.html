@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Wallet Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            padding: 0;
+            min-height: 100vh;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .total-balance {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .total-balance .label {
+            font-size: 12px;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .total-balance .amount {
+            font-size: 36px;
+            font-weight: 400;
+            color: #ffffff;
+            letter-spacing: -1px;
+        }
+
+        .profit-loss {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .profit-loss.positive {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .profit-loss.negative {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .profit-loss .label {
+            font-size: 11px;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .profit-loss .amount {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .profit-loss.positive .amount {
+            color: #22c55e;
+        }
+
+        .profit-loss.negative .amount {
+            color: #ef4444;
+        }
+
+        .profit-loss .percentage {
+            font-size: 14px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .info-row .label {
+            color: #bbb;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-row .value {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .baseline-info {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #bbb;
+            text-align: center;
+        }
+
+        .baseline-info.none {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #ffffff;
+        }
+
+        .btn:hover {
+            background: #2a2a2a;
+            border-color: #444;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-reset {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .btn-reset:hover {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: #f59e0b;
+        }
+
+        .btn-refresh {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
+        }
+
+        .btn-manage {
+            grid-column: 1 / -1;
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+
+        .btn-manage:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: #8b5cf6;
+        }
+
+        .btn-history {
+            grid-column: 1 / -1;
+            border-color: #06b6d4;
+            color: #06b6d4;
+        }
+
+        .btn-history:hover {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: #06b6d4;
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #bbb;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            border-color: #f59e0b;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .status.error {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .last-updated {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* History Section */
+        .history-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .history-header h3 {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .btn-clear {
+            padding: 6px 12px;
+            border: 1px solid #ef4444;
+            background: transparent;
+            color: #ef4444;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .btn-clear:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            background: #000;
+            border: 1px solid #222;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .history-item .date {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .history-item .profit {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .history-item .profit.positive {
+            color: #22c55e;
+        }
+
+        .history-item .profit.negative {
+            color: #ef4444;
+        }
+
+        /* Wallet Management Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background: #000000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            max-width: 420px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #ffffff;
+        }
+
+        .add-wallet-form {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            color: #ffffff;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: #222;
+        }
+
+        .btn-add {
+            background: #8b5cf6;
+            border: 1px solid #8b5cf6;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background: #7c3aed;
+        }
+
+        .wallet-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .wallet-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 12px;
+            color: #bbb;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .btn-remove {
+            background: none;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .btn-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading-indicator {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Wallet Tracker</h1>
+            <p class="subtitle">Solana</p>
+        </div>
+
+        <div class="stats">
+            <div class="total-balance">
+                <div class="label">Total Balance</div>
+                <div class="amount" id="totalAmount">--</div>
+            </div>
+
+            <div class="profit-loss" id="profitLoss" style="display: none;">
+                <div class="label">P/L Since Reset</div>
+                <div class="amount" id="plAmount">--</div>
+                <div class="percentage" id="plPercentage">--</div>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <span class="label">Wallets</span>
+            <span class="value" id="walletCount">--</span>
+        </div>
+
+        <div class="baseline-info" id="baselineInfo">
+            No baseline set
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-reset" id="resetBtn" onclick="resetBaseline()">
+                🔄 Reset Baseline
+            </button>
+            <button class="btn btn-refresh" id="refreshBtn" onclick="fetchBalances()">
+                ⚡ Update Balance
+            </button>
+            <button class="btn btn-manage" onclick="openWalletManager()">
+                📝 Manage Wallets
+            </button>
+            <button class="btn btn-history" onclick="toggleHistory()">
+                📊 Launch History
+            </button>
+        </div>
+
+        <div class="history-section" id="historySection" style="display: none;">
+            <div class="history-header">
+                <h3>Launch History</h3>
+                <button class="btn-clear" onclick="clearHistory()">Clear All</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- History items will be loaded here -->
+            </div>
+        </div>
+
+        <div class="status" id="status">Ready - Click "Update Balance" to refresh</div>
+        
+        <div class="last-updated" id="lastUpdated">--</div>
+    </div>
+
+    <!-- Wallet Management Modal -->
+    <div class="modal" id="walletModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Manage Wallets</h2>
+                <button class="close-btn" onclick="closeWalletManager()">×</button>
+            </div>
+
+            <div class="add-wallet-form">
+                <div class="input-group">
+                    <textarea 
+                        id="newWalletInput" 
+                        placeholder="Paste wallet public key(s)... (one per line)"
+                        rows="5"
+                        style="resize: vertical; min-height: 100px; font-family: monospace; font-size: 13px; line-height: 1.6;"
+                    ></textarea>
+                </div>
+                <div class="button-row" style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn-add" onclick="addWallet()" style="flex: 1;">Add Wallet(s)</button>
+                    <button class="btn-delete-all" onclick="deleteAllWallets()" style="flex: 1; background: #ef4444; border: 1px solid #dc2626;">Delete All Wallets</button>
+                </div>
+            </div>
+
+            <div class="wallet-list" id="walletList">
+                <!-- Wallets will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchBalances() {
+            const statusEl = document.getElementById('status');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const totalAmountEl = document.getElementById('totalAmount');
+            
+            try {
+                statusEl.textContent = 'Fetching wallet balances...';
+                statusEl.className = 'status loading loading-indicator';
+                refreshBtn.disabled = true;
+                totalAmountEl.textContent = 'Loading...';
+
+                const result = await window.electronAPI.fetchBalances();
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                updateUI(result.data);
+                statusEl.textContent = `✓ Updated ${result.data.walletCount} wallets successfully`;
+                statusEl.className = 'status';
+                
+                // Update history if visible
+                if (document.getElementById('historySection').style.display !== 'none') {
+                    await loadHistory();
+                }
+
+                setTimeout(() => {
+                    statusEl.textContent = 'Ready - Click "Update Balance" to refresh';
+                }, 3000);
+
+            } catch (error) {
+                statusEl.textContent = `❌ Error: ${error.message}`;
+                statusEl.className = 'status error';
+                totalAmountEl.textContent = 'Error';
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        }
+
+        async function resetBaseline() {
+            const resetBtn = document.getElementById('resetBtn');
+            const statusEl = document.getElementById('status');
+            
+            if (!confirm('Set current balance as new baseline for next launch?')) {
+                return;
+            }
+
+            try {
+                resetBtn.disabled = true;
+                statusEl.textContent = 'Setting new baseline...';
+                statusEl.className = 'status loading';
+
+                const result = await window.electronAPI.resetBaseline();
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                updateUI(result.data);
+                statusEl.textContent = 'New baseline set! Ready for next launch';
+                statusEl.className = 'status';
+
+                // Update history if visible
+                if (document.getElementById('historySection').style.display !== 'none') {
+                    await loadHistory();
+                }
+
+            } catch (error) {
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            } finally {
+                resetBtn.disabled = false;
+            }
+        }
+
+        function updateUI(data) {
+            document.getElementById('totalAmount').textContent = 
+                `${data.total.toFixed(4)} SOL`;
+            
+            document.getElementById('walletCount').textContent = data.walletCount;
+
+            const profitLossEl = document.getElementById('profitLoss');
+            const baselineInfoEl = document.getElementById('baselineInfo');
+
+            if (data.baseline) {
+                const difference = data.total - data.baseline.total;
+                const percentage = data.baseline.total > 0 
+                    ? ((difference / data.baseline.total) * 100).toFixed(2) 
+                    : '0.00';
+
+                profitLossEl.style.display = 'block';
+                
+                if (difference >= 0) {
+                    profitLossEl.className = 'profit-loss positive';
+                    document.getElementById('plAmount').textContent = 
+                        `+${difference.toFixed(4)} SOL`;
+                } else {
+                    profitLossEl.className = 'profit-loss negative';
+                    document.getElementById('plAmount').textContent = 
+                        `${difference.toFixed(4)} SOL`;
+                }
+
+                document.getElementById('plPercentage').textContent = 
+                    `${difference >= 0 ? '+' : ''}${percentage}%`;
+
+                const baselineDate = new Date(data.baseline.timestamp).toLocaleString();
+                baselineInfoEl.className = 'baseline-info';
+                baselineInfoEl.textContent = 
+                    `Baseline: ${data.baseline.total.toFixed(4)} SOL - Set: ${baselineDate}`;
+            } else {
+                profitLossEl.style.display = 'none';
+                baselineInfoEl.className = 'baseline-info none';
+                baselineInfoEl.textContent = 'No baseline set - Click "Reset Baseline" to start tracking';
+            }
+
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // History Functions
+        async function toggleHistory() {
+            const historySection = document.getElementById('historySection');
+            
+            if (historySection.style.display === 'none') {
+                historySection.style.display = 'block';
+                await loadHistory();
+            } else {
+                historySection.style.display = 'none';
+            }
+        }
+
+        async function loadHistory() {
+            const historyListEl = document.getElementById('historyList');
+            
+            try {
+                const result = await window.electronAPI.getHistory();
+                
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                historyListEl.innerHTML = '';
+                
+                if (result.history.length === 0) {
+                    historyListEl.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">No launch history yet</div>';
+                    return;
+                }
+
+                result.history.forEach(entry => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    
+                    const profitClass = entry.profit >= 0 ? 'positive' : 'negative';
+                    const profitSymbol = entry.profit >= 0 ? '+' : '';
+                    
+                    item.innerHTML = `
+                        <div class="date">${new Date(entry.timestamp).toLocaleString()}</div>
+                        <div class="profit ${profitClass}">
+                            ${profitSymbol}${entry.profit.toFixed(4)} SOL (${profitSymbol}${entry.profitPercent.toFixed(2)}%)
+                        </div>
+                        <div style="font-size:11px;color:#666;margin-top:4px;">
+                            ${entry.startBalance.toFixed(4)} → ${entry.endBalance.toFixed(4)} SOL
+                        </div>
+                    `;
+                    historyListEl.appendChild(item);
+                });
+
+            } catch (error) {
+                historyListEl.innerHTML = `<div style="text-align:center;color:#ef4444;padding:20px;">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function clearHistory() {
+            if (!confirm('Clear all launch history?')) {
+                return;
+            }
+
+            try {
+                const result = await window.electronAPI.clearHistory();
+                
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                await loadHistory();
+
+            } catch (error) {
+                alert(`Failed to clear history: ${error.message}`);
+            }
+        }
+
+        // Wallet Management Functions
+        async function openWalletManager() {
+            document.getElementById('walletModal').classList.add('active');
+            await loadWalletList();
+        }
+
+        function closeWalletManager() {
+            document.getElementById('walletModal').classList.remove('active');
+            document.getElementById('newWalletInput').value = '';
+        }
+
+        async function loadWalletList() {
+            const walletListEl = document.getElementById('walletList');
+            
+            try {
+                const result = await window.electronAPI.getWallets();
+                
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                walletListEl.innerHTML = '';
+                
+                if (result.wallets.length === 0) {
+                    walletListEl.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">No wallets added yet</div>';
+                    return;
+                }
+
+                result.wallets.forEach(wallet => {
+                    const item = document.createElement('div');
+                    item.className = 'wallet-item';
+                    item.innerHTML = `
+                        <div class="wallet-address" title="${wallet}">${wallet}</div>
+                        <button class="btn-remove" onclick="removeWallet('${wallet}')">Remove</button>
+                    `;
+                    walletListEl.appendChild(item);
+                });
+
+            } catch (error) {
+                walletListEl.innerHTML = `<div style="text-align:center;color:#ef4444;padding:20px;">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function addWallet() {
+            const input = document.getElementById('newWalletInput');
+            const addresses = input.value.trim().split('\n').map(addr => addr.trim()).filter(addr => addr);
+            
+            if (addresses.length === 0) {
+                alert('Please enter at least one wallet address');
+                return;
+            }
+
+            try {
+                let successCount = 0;
+                let failedCount = 0;
+                
+                for (const address of addresses) {
+                    const result = await window.electronAPI.addWallet(address);
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        failedCount++;
+                        console.error(`Failed to add ${address}: ${result.error}`);
+                    }
+                }
+
+                input.value = '';
+                await loadWalletList();
+                
+                if (successCount > 0) {
+                    alert(`Successfully added ${successCount} wallet(s)${failedCount > 0 ? `, ${failedCount} failed` : ''}`);
+                    // Refresh balances to include new wallets
+                    setTimeout(() => fetchBalances(), 500);
+                } else {
+                    alert('Failed to add wallets. They may already exist or be invalid.');
+                }
+
+            } catch (error) {
+                alert(`Failed to add wallet: ${error.message}`);
+            }
+        }
+
+        async function removeWallet(address) {
+            if (!confirm(`Remove wallet ${address.substring(0, 8)}...?`)) {
+                return;
+            }
+
+            try {
+                const result = await window.electronAPI.removeWallet(address);
+                
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                await loadWalletList();
+                
+                // Refresh balances to update count
+                setTimeout(() => fetchBalances(), 500);
+
+            } catch (error) {
+                alert(`Failed to remove wallet: ${error.message}`);
+            }
+        }
+
+        async function deleteAllWallets() {
+            if (!confirm('Are you sure you want to delete ALL wallets? This cannot be undone!')) {
+                return;
+            }
+
+            try {
+                const result = await window.electronAPI.deleteAllWallets();
+                
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                await loadWalletList();
+                alert('All wallets have been deleted');
+                
+                // Refresh balances to update count
+                setTimeout(() => fetchBalances(), 500);
+
+            } catch (error) {
+                alert(`Failed to delete all wallets: ${error.message}`);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('walletModal').addEventListener('click', (e) => {
+            if (e.target.id === 'walletModal') {
+                closeWalletManager();
+            }
+        });
+
+        // Initialize - Load balances on startup, no auto-refresh
+        window.addEventListener('load', () => {
+            // Small delay to ensure everything is loaded
+            setTimeout(() => {
+                fetchBalances();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

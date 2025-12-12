@@ -1,0 +1,5 @@
+node_modules/
+baseline.json
+history.json
+wallets.json
+.env

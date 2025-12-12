@@ -1,0 +1,17 @@
+{
+  "name": "404-profit-tracker",
+  "version": "1.0.0",
+  "description": "404 Profit Tracker - Track multiple Solana wallet balances for memecoin launches",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": ["solana", "wallet", "tracker", "balance"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "electron": "^27.1.0"
+  }
+}
