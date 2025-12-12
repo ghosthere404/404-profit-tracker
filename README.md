@@ -1,5 +1,4 @@
 <img width="636" height="1016" alt="image" src="https://github.com/user-attachments/assets/ed2f72df-0181-4882-a635-b87282254be9" /># 404 Profit Tracker 💰
-<img width="636" height="1016" alt="image" src="https://github.com/user-attachments/assets/df7123c8-896d-489e-b724-0b586d6f059d" />
 
 Desktop widget to track balances across multiple Solana wallets for memecoin launches.
 
